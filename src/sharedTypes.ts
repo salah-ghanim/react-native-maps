@@ -1,6 +1,6 @@
 import {NativeSyntheticEvent} from 'react-native';
 
-export type Provider = 'google' | undefined;
+export type Provider = 'google' | 'openstreetmaps' | undefined;
 
 export type LatLng = {
   latitude: number;

@@ -76,7 +76,7 @@ import java.util.concurrent.ExecutionException;
 import static androidx.core.content.PermissionChecker.checkSelfPermission;
 
 public class MapView extends com.google.android.gms.maps.MapView implements GoogleMap.InfoWindowAdapter,
-    GoogleMap.OnMarkerDragListener, OnMapReadyCallback, GoogleMap.OnPoiClickListener, GoogleMap.OnIndoorStateChangeListener {
+        GoogleMap.OnMarkerDragListener, OnMapReadyCallback, GoogleMap.OnPoiClickListener, GoogleMap.OnIndoorStateChangeListener {
   public GoogleMap map;
   private MarkerManager markerManager;
   private MarkerManager.Collection markerCollection;
@@ -112,7 +112,7 @@ public class MapView extends com.google.android.gms.maps.MapView implements Goog
   private int cameraMoveReason = 0;
 
   private static final String[] PERMISSIONS = new String[]{
-      "android.permission.ACCESS_FINE_LOCATION", "android.permission.ACCESS_COARSE_LOCATION"};
+          "android.permission.ACCESS_FINE_LOCATION", "android.permission.ACCESS_COARSE_LOCATION"};
 
   private final List<MapFeature> features = new ArrayList<>();
   private final Map<Marker, MapMarker> markerMap = new HashMap<>();
@@ -135,8 +135,8 @@ public class MapView extends com.google.android.gms.maps.MapView implements Goog
 
   private static boolean contextHasBug(Context context) {
     return context == null ||
-        context.getResources() == null ||
-        context.getResources().getConfiguration() == null;
+            context.getResources() == null ||
+            context.getResources().getConfiguration() == null;
   }
 
   // We do this to fix this bug:
@@ -147,7 +147,7 @@ public class MapView extends com.google.android.gms.maps.MapView implements Goog
   //
   // Doing this allows us to avoid both bugs.
   private static Context getNonBuggyContext(ThemedReactContext reactContext,
-      ReactApplicationContext appContext) {
+                                            ReactApplicationContext appContext) {
     Context superContext = reactContext;
     if (!contextHasBug(appContext.getCurrentActivity())) {
       superContext = appContext.getCurrentActivity();
@@ -181,27 +181,27 @@ public class MapView extends com.google.android.gms.maps.MapView implements Goog
     fusedLocationSource = new FusedLocationSource(context);
 
     gestureDetector =
-        new GestureDetectorCompat(reactContext, new GestureDetector.SimpleOnGestureListener() {
+            new GestureDetectorCompat(reactContext, new GestureDetector.SimpleOnGestureListener() {
 
-          @Override
-          public boolean onScroll(MotionEvent e1, MotionEvent e2, float distanceX,
-              float distanceY) {
-            if (handlePanDrag) {
-              onPanDrag(e2);
-            }
-            return false;
-          }
+              @Override
+              public boolean onScroll(MotionEvent e1, MotionEvent e2, float distanceX,
+                                      float distanceY) {
+                if (handlePanDrag) {
+                  onPanDrag(e2);
+                }
+                return false;
+              }
 
-          @Override
-          public boolean onDoubleTap(MotionEvent ev) {
-            onDoublePress(ev);
-            return false;
-          }
-        });
+              @Override
+              public boolean onDoubleTap(MotionEvent ev) {
+                onDoublePress(ev);
+                return false;
+              }
+            });
 
     this.addOnLayoutChangeListener(new OnLayoutChangeListener() {
       @Override public void onLayoutChange(View v, int left, int top, int right, int bottom,
-          int oldLeft, int oldTop, int oldRight, int oldBottom) {
+                                           int oldLeft, int oldTop, int oldRight, int oldBottom) {
         if (!paused) {
           MapView.this.cacheView();
         }
@@ -388,8 +388,8 @@ public class MapView extends com.google.android.gms.maps.MapView implements Goog
       public void onCameraIdle() {
         LatLngBounds bounds = map.getProjection().getVisibleRegion().latLngBounds;
         if ((cameraMoveReason != 0) &&
-          ((cameraLastIdleBounds == null) ||
-            LatLngBoundsUtils.BoundsAreDifferent(bounds, cameraLastIdleBounds))) {
+                ((cameraLastIdleBounds == null) ||
+                        LatLngBoundsUtils.BoundsAreDifferent(bounds, cameraLastIdleBounds))) {
 
           cameraLastIdleBounds = bounds;
           boolean isGesture = GoogleMap.OnCameraMoveStartedListener.REASON_GESTURE == cameraMoveReason;
@@ -456,7 +456,7 @@ public class MapView extends com.google.android.gms.maps.MapView implements Goog
 
   private boolean hasPermissions() {
     return checkSelfPermission(getContext(), PERMISSIONS[0]) == PermissionChecker.PERMISSION_GRANTED ||
-        checkSelfPermission(getContext(), PERMISSIONS[1]) == PermissionChecker.PERMISSION_GRANTED;
+            checkSelfPermission(getContext(), PERMISSIONS[1]) == PermissionChecker.PERMISSION_GRANTED;
   }
 
 
@@ -888,7 +888,7 @@ public class MapView extends com.google.android.gms.maps.MapView implements Goog
 
       if (edgePadding != null) {
         map.setPadding(edgePadding.getInt("left"), edgePadding.getInt("top"),
-          edgePadding.getInt("right"), edgePadding.getInt("bottom"));
+                edgePadding.getInt("right"), edgePadding.getInt("bottom"));
       }
 
       if (animated) {
@@ -930,7 +930,7 @@ public class MapView extends com.google.android.gms.maps.MapView implements Goog
 
       if (edgePadding != null) {
         map.setPadding(edgePadding.getInt("left"), edgePadding.getInt("top"),
-          edgePadding.getInt("right"), edgePadding.getInt("bottom"));
+                edgePadding.getInt("right"), edgePadding.getInt("bottom"));
       }
 
       if (animated) {
@@ -955,7 +955,7 @@ public class MapView extends com.google.android.gms.maps.MapView implements Goog
   }
 
   public void fitToCoordinates(ReadableArray coordinatesArray, ReadableMap edgePadding,
-      boolean animated) {
+                               boolean animated) {
     if (map == null) return;
 
     LatLngBounds.Builder builder = new LatLngBounds.Builder();
@@ -1007,8 +1007,8 @@ public class MapView extends com.google.android.gms.maps.MapView implements Goog
     LatLng southWest = bounds.southwest;
 
     return new double[][] {
-      {northEast.longitude, northEast.latitude},
-      {southWest.longitude, southWest.latitude}
+            {northEast.longitude, northEast.latitude},
+            {southWest.longitude, southWest.latitude}
     };
   }
 
@@ -1048,7 +1048,7 @@ public class MapView extends com.google.android.gms.maps.MapView implements Goog
   public boolean dispatchTouchEvent(MotionEvent ev) {
     gestureDetector.onTouchEvent(ev);
 
-    int X = (int)ev.getX();          
+    int X = (int)ev.getX();
     int Y = (int)ev.getY();
     if(map != null) {
       tapLocation = map.getProjection().fromScreenLocation(new Point(X,Y));
@@ -1059,7 +1059,7 @@ public class MapView extends com.google.android.gms.maps.MapView implements Goog
     switch (action) {
       case (MotionEvent.ACTION_DOWN):
         this.getParent().requestDisallowInterceptTouchEvent(
-            map != null && map.getUiSettings().isScrollGesturesEnabled());
+                map != null && map.getUiSettings().isScrollGesturesEnabled());
         break;
       case (MotionEvent.ACTION_UP):
         // Clear this regardless, since isScrollGesturesEnabled() may have been updated
@@ -1126,11 +1126,11 @@ public class MapView extends com.google.android.gms.maps.MapView implements Goog
       this.mapLoadingLayout = new RelativeLayout(getContext());
       this.mapLoadingLayout.setBackgroundColor(Color.LTGRAY);
       this.addView(this.mapLoadingLayout,
-          new ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT,
-              ViewGroup.LayoutParams.MATCH_PARENT));
+              new ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT,
+                      ViewGroup.LayoutParams.MATCH_PARENT));
 
       RelativeLayout.LayoutParams params = new RelativeLayout.LayoutParams(
-          RelativeLayout.LayoutParams.WRAP_CONTENT, RelativeLayout.LayoutParams.WRAP_CONTENT);
+              RelativeLayout.LayoutParams.WRAP_CONTENT, RelativeLayout.LayoutParams.WRAP_CONTENT);
       params.addRule(RelativeLayout.CENTER_IN_PARENT);
       this.mapLoadingLayout.addView(this.getMapLoadingProgressBar(), params);
 
@@ -1144,8 +1144,8 @@ public class MapView extends com.google.android.gms.maps.MapView implements Goog
     if (this.cacheImageView == null) {
       this.cacheImageView = new ImageView(getContext());
       this.addView(this.cacheImageView,
-          new ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT,
-              ViewGroup.LayoutParams.MATCH_PARENT));
+              new ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT,
+                      ViewGroup.LayoutParams.MATCH_PARENT));
       this.cacheImageView.setVisibility(View.INVISIBLE);
     }
     return this.cacheImageView;
@@ -1271,7 +1271,7 @@ public class MapView extends com.google.android.gms.maps.MapView implements Goog
         MapMarker marker = new MapMarker(context, options, this.manager.getMarkerManager());
 
         if (placemark.getInlineStyle() != null
-            && placemark.getInlineStyle().getIconUrl() != null) {
+                && placemark.getInlineStyle().getIconUrl() != null) {
           marker.setImage(placemark.getInlineStyle().getIconUrl());
         } else if (container.getStyle(placemark.getStyleId()) != null) {
           KmlStyle style = container.getStyle(placemark.getStyleId());
@@ -1383,7 +1383,7 @@ public class MapView extends com.google.android.gms.maps.MapView implements Goog
 
     for (Map.Entry<Marker, MapMarker> entryMarker : markerMap.entrySet()) {
       if (entryMarker.getKey().getPosition().equals(marker.getPosition())
-          && entryMarker.getKey().getTitle().equals(marker.getTitle())) {
+              && entryMarker.getKey().getTitle().equals(marker.getTitle())) {
         airMarker = entryMarker.getValue();
         break;
       }

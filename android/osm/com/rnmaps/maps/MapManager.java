@@ -3,65 +3,37 @@ package com.rnmaps.maps;
 import android.view.View;
 
 import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
 
 import com.facebook.react.bridge.Arguments;
 import com.facebook.react.bridge.ReactApplicationContext;
-import com.facebook.react.bridge.ReadableArray;
 import com.facebook.react.bridge.ReadableMap;
 import com.facebook.react.bridge.WritableMap;
-import com.facebook.react.common.MapBuilder;
 import com.facebook.react.modules.core.DeviceEventManagerModule;
-import com.facebook.react.uimanager.LayoutShadowNode;
-import com.facebook.react.uimanager.ReactStylesDiffMap;
-import com.facebook.react.uimanager.StateWrapper;
 import com.facebook.react.uimanager.ThemedReactContext;
 import com.facebook.react.uimanager.ViewGroupManager;
 import com.facebook.react.uimanager.annotations.ReactProp;
 import com.facebook.react.uimanager.events.RCTEventEmitter;
-import com.google.android.gms.location.Priority;
-import com.google.android.gms.maps.GoogleMap;
-import com.google.android.gms.maps.GoogleMapOptions;
-import com.google.android.gms.maps.model.LatLng;
-import com.google.android.gms.maps.model.LatLngBounds;
 
-import java.util.Map;
+import org.osmdroid.config.Configuration;
+import org.osmdroid.util.BoundingBox;
+import org.osmdroid.views.CustomZoomButtonsController;
 
-public class MapManager extends ViewGroupManager<MapView> {
+public class MapManager extends ViewGroupManager<MapView>  implements org.osmdroid.views.MapView.OnFirstLayoutListener {
 
-  private static final String REACT_CLASS = "AIRMap";
+  private static final String REACT_CLASS = "AIROSMMap";
 
-  private final Map<String, Integer> MAP_TYPES = MapBuilder.of(
-      "standard", GoogleMap.MAP_TYPE_NORMAL,
-      "satellite", GoogleMap.MAP_TYPE_SATELLITE,
-      "hybrid", GoogleMap.MAP_TYPE_HYBRID,
-      "terrain", GoogleMap.MAP_TYPE_TERRAIN,
-      "none", GoogleMap.MAP_TYPE_NONE
-  );
 
-  private final Map<String, Integer> MY_LOCATION_PRIORITY = MapBuilder.of(
-          "balanced", Priority.PRIORITY_BALANCED_POWER_ACCURACY,
-          "high", Priority.PRIORITY_HIGH_ACCURACY,
-          "low", Priority.PRIORITY_LOW_POWER,
-          "passive", Priority.PRIORITY_PASSIVE
-  );
 
   private final ReactApplicationContext appContext;
-  private MapMarkerManager markerManager;
 
-  protected GoogleMapOptions googleMapOptions;
+  private BoundingBox initialBoundingBox;
+
 
   public MapManager(ReactApplicationContext context) {
     this.appContext = context;
-    this.googleMapOptions = new GoogleMapOptions();
+    Configuration.getInstance().setUserAgentValue("com.react-native-maps.testapp");
   }
 
-  public MapMarkerManager getMarkerManager() {
-    return this.markerManager;
-  }
-  public void setMarkerManager(MapMarkerManager markerManager) {
-    this.markerManager = markerManager;
-  }
 
   @Override
   public String getName() {
@@ -70,20 +42,9 @@ public class MapManager extends ViewGroupManager<MapView> {
 
   @Override
   protected MapView createViewInstance(@NonNull ThemedReactContext context) {
-    return new MapView(context, this.appContext, this, googleMapOptions);
+    return new MapView(context, this.appContext, this);
   }
-  @Override
-  protected MapView createViewInstance(int reactTag, @NonNull ThemedReactContext reactContext, @Nullable ReactStylesDiffMap initialProps, @Nullable StateWrapper stateWrapper) {
-    if (initialProps != null){
-      if (initialProps.getString("googleMapId") != null) {
-        googleMapOptions.mapId(initialProps.getString("googleMapId"));
-      }
-      if (initialProps.hasKey("liteMode")) {
-        googleMapOptions.liteMode(initialProps.getBoolean("liteMode", false));
-      }
-    }
-    return super.createViewInstance(reactTag, reactContext, initialProps, stateWrapper);
-  }
+
 
   private void emitMapError(ThemedReactContext context, String message, String type) {
     WritableMap error = Arguments.createMap();
@@ -95,27 +56,64 @@ public class MapManager extends ViewGroupManager<MapView> {
         .emit("onError", error);
   }
 
-  @ReactProp(name = "region")
-  public void setRegion(MapView view, ReadableMap region) {
-    view.setRegion(region);
+  @ReactProp(name = "zoomEnabled", defaultBoolean = true)
+  public void setZoomEnabled(MapView view, boolean zoomEnabled) {
+    view.getZoomController().setZoomInEnabled(zoomEnabled);
+
   }
 
-  @ReactProp(name = "liteMode", defaultBoolean = false)
-  public void setLiteMode(MapView view, boolean liteMode) {
-      googleMapOptions.liteMode(liteMode);
+  @ReactProp(name = "zoomControlEnabled", defaultBoolean = true)
+  public void setZoomControlEnabled(MapView view, boolean zoomControlEnabled) {
+    view.getZoomController().setVisibility(zoomControlEnabled ? CustomZoomButtonsController.Visibility.ALWAYS : CustomZoomButtonsController.Visibility.NEVER);
   }
 
-  @ReactProp(name = "googleMapId")
-  public void setGoogleMapId(MapView view, @Nullable String googleMapId) {
-    if (googleMapId != null) {
-      googleMapOptions.mapId(googleMapId);
+  @ReactProp(name = "minZoomLevel")
+  public void setMinZoomLevel(MapView view, float minZoomLevel) {
+    view.setMinZoomLevel((double) minZoomLevel);
+  }
+
+  @ReactProp(name = "maxZoomLevel")
+  public void setMaxZoomLevel(MapView view, float maxZoomLevel) {
+    view.setMaxZoomLevel((double) maxZoomLevel);
+  }
+  private BoundingBox boundingBoxFromRegionMap(ReadableMap region){
+    double lng = region.getDouble("longitude");
+    double lat = region.getDouble("latitude");
+    double lngDelta = region.getDouble("longitudeDelta");
+    double latDelta = region.getDouble("latitudeDelta");
+
+    return new BoundingBox(lat + (latDelta / 2), lng + (lngDelta / 2) , lat - (latDelta / 2), lng - (lngDelta / 2));
+  }
+  @ReactProp(name = "initialRegion")
+  public void setInitialRegion(MapView view, ReadableMap region) {
+      safelySetRegion(view, region);
+  }
+
+  private void safelySetRegion(MapView view, ReadableMap region){
+    if (region != null) {
+      if (view.isLayoutOccurred()) {
+        view.zoomToBoundingBox(boundingBoxFromRegionMap(region), true);
+      } else {
+        initialBoundingBox = boundingBoxFromRegionMap(region);
+      }
     }
   }
 
-  @ReactProp(name = "initialRegion")
-  public void setInitialRegion(MapView view, ReadableMap initialRegion) {
-    view.setInitialRegion(initialRegion);
+  @ReactProp(name = "region")
+  public void setRegion(MapView view, ReadableMap region) {
+    safelySetRegion(view, region);
   }
+
+  /*
+
+
+    @ReactProp(name = "zoomTapEnabled", defaultBoolean = true)
+  public void setZoomTapEnabled(MapView view, boolean zoomEnabled) {
+    view.getZoomController().setZoomInEnabled(zoomEnabled);
+
+  }
+
+
 
   @ReactProp(name = "camera")
   public void setCamera(MapView view, ReadableMap camera) {
@@ -125,17 +123,6 @@ public class MapManager extends ViewGroupManager<MapView> {
   @ReactProp(name = "initialCamera")
   public void setInitialCamera(MapView view, ReadableMap initialCamera) {
     view.setInitialCamera(initialCamera);
-  }
-
-  @ReactProp(name = "mapType")
-  public void setMapType(MapView view, @Nullable String mapType) {
-    int typeId = MAP_TYPES.get(mapType);
-    view.map.setMapType(typeId);
-  }
-
-  @ReactProp(name = "customMapStyleString")
-  public void setMapStyle(MapView view, @Nullable String customMapStyleString) {
-    view.setMapStyle(customMapStyleString);
   }
 
   @ReactProp(name = "mapPadding")
@@ -235,15 +222,6 @@ public class MapManager extends ViewGroupManager<MapView> {
     view.map.getUiSettings().setScrollGesturesEnabled(scrollEnabled);
   }
 
-  @ReactProp(name = "zoomEnabled", defaultBoolean = false)
-  public void setZoomEnabled(MapView view, boolean zoomEnabled) {
-    view.map.getUiSettings().setZoomGesturesEnabled(zoomEnabled);
-  }
-
-  @ReactProp(name = "zoomControlEnabled", defaultBoolean = true)
-  public void setZoomControlEnabled(MapView view, boolean zoomControlEnabled) {
-    view.map.getUiSettings().setZoomControlsEnabled(zoomControlEnabled);
-  }
 
   @ReactProp(name = "rotateEnabled", defaultBoolean = false)
   public void setRotateEnabled(MapView view, boolean rotateEnabled) {
@@ -285,15 +263,7 @@ public class MapManager extends ViewGroupManager<MapView> {
     view.map.getUiSettings().setTiltGesturesEnabled(pitchEnabled);
   }
 
-  @ReactProp(name = "minZoomLevel")
-  public void setMinZoomLevel(MapView view, float minZoomLevel) {
-    view.map.setMinZoomPreference(minZoomLevel);
-  }
 
-  @ReactProp(name = "maxZoomLevel")
-  public void setMaxZoomLevel(MapView view, float maxZoomLevel) {
-    view.map.setMaxZoomPreference(maxZoomLevel);
-  }
 
   @ReactProp(name = "kmlSrc")
   public void setKmlSrc(MapView view, String kmlUrl) {
@@ -449,15 +419,22 @@ public class MapManager extends ViewGroupManager<MapView> {
     view.updateExtraData(extraData);
   }
 
+   */
   void pushEvent(ThemedReactContext context, View view, String name, WritableMap data) {
     context.getJSModule(RCTEventEmitter.class)
         .receiveEvent(view.getId(), name, data);
   }
 
-  @Override
-  public void onDropViewInstance(MapView view) {
-    view.doDestroy();
-    super.onDropViewInstance(view);
+  void pushEvent(ThemedReactContext context, Integer viewId, String name, WritableMap data) {
+    context.getJSModule(RCTEventEmitter.class)
+            .receiveEvent(viewId, name, data);
   }
 
+  @Override
+  public void onFirstLayout(View view, int left, int top, int right, int bottom) {
+      if (initialBoundingBox != null && view instanceof MapView){
+        ((MapView) view).zoomToBoundingBox(initialBoundingBox, false);
+        initialBoundingBox = null;
+      }
+  }
 }

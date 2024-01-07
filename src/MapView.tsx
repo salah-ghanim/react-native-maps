@@ -1092,9 +1092,11 @@ class MapView extends React.Component<MapViewProps, State> {
 const airMaps: {
   default: HostComponent<NativeProps>;
   google: NativeComponent<NativeProps>;
+  openstreetmaps: NativeComponent<NativeProps>;
 } = {
   default: requireNativeComponent<NativeProps>('AIRMap'),
   google: () => null,
+  openstreetmaps: requireNativeComponent<NativeProps>('AIROSMMap'),
 };
 if (Platform.OS === 'android') {
   airMaps.google = airMaps.default;

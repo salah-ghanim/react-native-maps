@@ -6,7 +6,11 @@ import {
   UIManager,
   HostComponent,
 } from 'react-native';
-import {PROVIDER_DEFAULT, PROVIDER_GOOGLE} from './ProviderConstants';
+import {
+  PROVIDER_DEFAULT,
+  PROVIDER_GOOGLE,
+  PROVIDER_OPENSTREETMAPS,
+} from './ProviderConstants';
 import {Provider} from './sharedTypes';
 import {MapCallout} from './MapCallout';
 import {MapOverlay} from './MapOverlay';
@@ -33,6 +37,9 @@ export function getNativeMapName(provider: Provider) {
   }
   if (provider === PROVIDER_GOOGLE) {
     return 'AIRGoogleMap';
+  }
+  if (provider === PROVIDER_OPENSTREETMAPS) {
+    return 'AIROSMMap';
   }
   return 'AIRMap';
 }

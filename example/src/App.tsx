@@ -8,7 +8,11 @@ import {
   Text,
   Switch,
 } from 'react-native';
-import {PROVIDER_GOOGLE, PROVIDER_DEFAULT} from 'react-native-maps';
+import MapView, {
+  PROVIDER_GOOGLE,
+  PROVIDER_DEFAULT,
+  PROVIDER_OPENSTREETMAPS,
+} from 'react-native-maps';
 import DisplayLatLng from './examples/DisplayLatLng';
 import ViewsAsMarkers from './examples/ViewsAsMarkers';
 import EventListener from './examples/EventListener';
@@ -116,21 +120,18 @@ export default class App extends React.Component<any, any> {
 
     return (
       <View style={styles.container}>
-        {Component && (
-          <Component
-            provider={useGoogleMaps ? PROVIDER_GOOGLE : PROVIDER_DEFAULT}
-          />
-        )}
-        {Component && this.renderBackButton()}
-        {!Component && (
-          <ScrollView
-            style={StyleSheet.absoluteFill}
-            contentContainerStyle={styles.scrollview}
-            showsVerticalScrollIndicator={false}>
-            {IOS && this.renderGoogleSwitch()}
-            {examples.map((example: any) => this.renderExample(example))}
-          </ScrollView>
-        )}
+        <MapView
+          provider={PROVIDER_OPENSTREETMAPS}
+          style={styles.map}
+          initialRegion={{
+            latitude: 52.5,
+            longitude: 13.4,
+            latitudeDelta: 0.5,
+            longitudeDelta: 0.5,
+          }}
+          zoomEnabled={false}
+          zoomControlEnabled={false}
+        />
       </View>
     );
   }
@@ -199,6 +200,13 @@ const styles = StyleSheet.create({
     ...StyleSheet.absoluteFillObject,
     justifyContent: 'flex-end',
     alignItems: 'center',
+  },
+  map: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
   },
   scrollview: {
     alignItems: 'center',
