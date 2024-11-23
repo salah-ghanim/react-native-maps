@@ -1,8 +1,9 @@
 import * as React from 'react';
+import MapMarkerView from './specs/NativeComponentMapMarker';
+
 import {
   StyleSheet,
   Animated,
-  Image,
   ViewProps,
   ImageURISource,
   ImageRequireSource,
@@ -418,36 +419,10 @@ export class MapMarker extends React.Component<MapMarkerProps> {
   }
 
   render() {
-    const {stopPropagation = false} = this.props;
-    let image;
-    if (this.props.image) {
-      image = Image.resolveAssetSource(this.props.image) || {};
-      image = image.uri || this.props.image;
-    }
-
-    let icon;
-    if (this.props.icon) {
-      icon = Image.resolveAssetSource(this.props.icon) || {};
-      icon = icon.uri;
-    }
-
-    const AIRMapMarker = this.getNativeComponent();
-
     return (
-      <AIRMapMarker
+      <MapMarkerView
         {...this.props}
-        ref={this.marker}
-        image={image}
-        icon={icon}
         style={[styles.marker, this.props.style]}
-        onPress={event => {
-          if (stopPropagation) {
-            event.stopPropagation();
-          }
-          if (this.props.onPress) {
-            this.props.onPress(event);
-          }
-        }}
       />
     );
   }

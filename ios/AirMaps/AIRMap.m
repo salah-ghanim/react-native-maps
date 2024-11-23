@@ -106,7 +106,11 @@ const NSInteger AIRMapMaxZoomLevel = 20;
 - (void)insertReactSubview:(id<RCTComponent>)subview atIndex:(NSInteger)atIndex {
     // Our desired API is to pass up markers/overlays as children to the mapview component.
     // This is where we intercept them and do the appropriate underlying mapview action.
-    if ([subview isKindOfClass:[AIRMapMarker class]]) {
+    if ([subview isKindOfClass:[NSObject class]] && [subview respondsToSelector:@selector(marker)]) {
+        AIRMapMarker* marker =(AIRMapMarker *) [((NSObject *)subview) valueForKey:@"marker"];
+        marker.map = self;
+        [self addAnnotation:marker];
+      } else if ([subview isKindOfClass:[AIRMapMarker class]]) {
         [self addAnnotation:(id <MKAnnotation>) subview];
     } else if ([subview isKindOfClass:[AIRMapPolyline class]]) {
         ((AIRMapPolyline *)subview).map = self;
